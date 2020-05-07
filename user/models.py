@@ -138,7 +138,6 @@ class Job(models.Model):
     companyid = models.CharField(max_length=10, blank=True, null=True)
     jobinfo = models.TextField(blank=True, null=True)  # This field type is a guess.
     company_companyid = models.ForeignKey(Company, models.DO_NOTHING, db_column='company_companyid')
-    resume_resumeid = models.ForeignKey('Resume', models.DO_NOTHING, db_column='resume_resumeid')
 
     class Meta:
         managed = False
