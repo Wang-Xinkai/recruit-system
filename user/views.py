@@ -20,7 +20,7 @@ def add_student(request):
                           smajor=request.GET.get('smajor'))
         student.save()
         response['msg'] = 'success'
-        response['err_num'] = 0
+        response['error_num'] = 0
     except  Exception as e:
         response['msg'] = str(e)
         response['error_num'] = 1
@@ -36,7 +36,7 @@ def add_company(request):
                           ctel=request.GET.get('ctel'), caddress=request.GET.get('caddress'))
         company.save()
         response['msg'] = 'success'
-        response['err_num'] = 0
+        response['error_num'] = 0
     except  Exception as e:
         response['msg'] = str(e)
         response['error_num'] = 1
@@ -53,7 +53,7 @@ def add_job(request):
                   company_companyid=Company.objects.get(cloginid=request.GET.get('companyid')))
         job.save()
         response['msg'] = 'success'
-        response['err_num'] = 0
+        response['error_num'] = 0
     except  Exception as e:
         response['msg'] = str(e)
         response['error_num'] = 1
