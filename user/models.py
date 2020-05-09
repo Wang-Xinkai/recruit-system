@@ -2,11 +2,9 @@
 # You'll have to do the following manually to clean this up:
 #   * Rearrange models' order
 #   * Make sure each model has one field with primary_key=True
-#   * Make sure each ForeignKey has `on_delete` set to the desired behavior.
+#   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
-from __future__ import unicode_literals
-
 from django.db import models
 
 
@@ -93,7 +91,7 @@ class DjangoAdminLog(models.Model):
     action_time = models.DateTimeField()
     object_id = models.TextField(blank=True, null=True)
     object_repr = models.CharField(max_length=200)
-    action_flag = models.SmallIntegerField()
+    action_flag = models.PositiveSmallIntegerField()
     change_message = models.TextField()
     content_type = models.ForeignKey('DjangoContentType', models.DO_NOTHING, blank=True, null=True)
     user = models.ForeignKey(AuthUser, models.DO_NOTHING)
@@ -135,7 +133,6 @@ class DjangoSession(models.Model):
 
 class Job(models.Model):
     jobid = models.CharField(primary_key=True, max_length=10)
-    companyid = models.CharField(max_length=10, blank=True, null=True)
     jobinfo = models.TextField(blank=True, null=True)  # This field type is a guess.
     company_companyid = models.ForeignKey(Company, models.DO_NOTHING, db_column='company_companyid')
 
@@ -145,7 +142,8 @@ class Job(models.Model):
 
 
 class Jobhistory(models.Model):
-    student_studentid = models.ForeignKey('Student', models.DO_NOTHING, db_column='student_studentid')
+    student_studentid = models.OneToOneField('Student', models.DO_NOTHING, db_column='student_studentid',
+                                             primary_key=True)
     job_jobid = models.ForeignKey(Job, models.DO_NOTHING, db_column='job_jobid')
 
     class Meta:
@@ -185,7 +183,6 @@ class Resume(models.Model):
 
 class Seminar(models.Model):
     seminarid = models.CharField(primary_key=True, max_length=10)
-    companyid = models.CharField(max_length=10, blank=True, null=True)
     stime = models.DateTimeField(blank=True, null=True)
     splace = models.CharField(max_length=45, blank=True, null=True)
     stheme = models.CharField(max_length=45, blank=True, null=True)
@@ -197,7 +194,8 @@ class Seminar(models.Model):
 
 
 class Seminarhistory(models.Model):
-    student_studentid = models.ForeignKey('Student', models.DO_NOTHING, db_column='student_studentid')
+    student_studentid = models.OneToOneField('Student', models.DO_NOTHING, db_column='student_studentid',
+                                             primary_key=True)
     seminar_seminarid = models.ForeignKey(Seminar, models.DO_NOTHING, db_column='seminar_seminarid')
 
     class Meta:
@@ -214,6 +212,7 @@ class Student(models.Model):
     sgrade = models.IntegerField(blank=True, null=True)
     sschool = models.CharField(max_length=45, blank=True, null=True)
     smajor = models.CharField(max_length=45, blank=True, null=True)
+    stel = models.CharField(max_length=45, blank=True, null=True)
 
     class Meta:
         managed = False
