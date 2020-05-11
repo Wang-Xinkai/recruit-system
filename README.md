@@ -1,17 +1,15 @@
-# recruit-system
+# Recruit System
 
-This is the project for course Software-Engineering.
+This is the course project for Software-Engineering.
 
-Backend uses Django framework and fromtend uses vue.js framework.
+This is the backend implementation. It uses Django framework and cooperate with frontend by vue.js framework. 
 
-Now I've finished some functions:
-+ fetch data from frontend via http request
-+ return data in mysql to frontend
-+ query database by the conditions from frontend
-+ add basic entities
-+ receive json file from frontend
+Now I've finished :
++ Entire databse model in mysql and connect with Django.
++ Communication with frontend via request and cross area.
 
 TODO: 
-+ use form to receive data 
-+ complete other essential functions
-+ coordinate with algorithm implementation and frontend
++ Other functions needed for the entire system.
++ Recommendation algorithm and reminder function.
+
+The frontend is in [here](https://github.com/zhouxy1003/SEProject)
