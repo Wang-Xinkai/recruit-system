@@ -135,6 +135,8 @@ class Job(models.Model):
     jobid = models.CharField(primary_key=True, max_length=10)
     jobinfo = models.TextField(blank=True, null=True)  # This field type is a guess.
     company_companyid = models.ForeignKey(Company, models.DO_NOTHING, db_column='company_companyid')
+    pop = models.IntegerField(blank=True, null=True)
+    tag = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = False
@@ -170,11 +172,19 @@ class Resume(models.Model):
     sgrade = models.IntegerField(blank=True, null=True)
     sschool = models.CharField(max_length=45, blank=True, null=True)
     smajor = models.CharField(max_length=45, blank=True, null=True)
-    eduinfo = models.TextField(blank=True, null=True)  # This field type is a guess.
-    interninfo = models.TextField(blank=True, null=True)  # This field type is a guess.
     skillinfo = models.TextField(blank=True, null=True)  # This field type is a guess.
     selfintro = models.TextField(blank=True, null=True)  # This field type is a guess.
     student_studentid = models.ForeignKey('Student', models.DO_NOTHING, db_column='student_studentid')
+    tel = models.CharField(max_length=11, blank=True, null=True)
+    email = models.CharField(max_length=45, blank=True, null=True)
+    edubegin = models.IntegerField(blank=True, null=True)
+    eduend = models.IntegerField(blank=True, null=True)
+    cname = models.CharField(max_length=45, blank=True, null=True)
+    industry = models.CharField(max_length=45, blank=True, null=True)
+    pname = models.CharField(max_length=45, blank=True, null=True)
+    place = models.CharField(max_length=45, blank=True, null=True)
+    expbegin = models.IntegerField(blank=True, null=True)
+    expend = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = False
@@ -213,6 +223,7 @@ class Student(models.Model):
     sschool = models.CharField(max_length=45, blank=True, null=True)
     smajor = models.CharField(max_length=45, blank=True, null=True)
     stel = models.CharField(max_length=45, blank=True, null=True)
+    interest = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
         managed = False
