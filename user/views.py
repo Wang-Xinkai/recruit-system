@@ -1,3 +1,5 @@
+from enum import Enum
+
 from django.shortcuts import render
 
 # Create your views here.
@@ -5,9 +7,10 @@ from django.views.decorators.http import require_http_methods
 from django.core import serializers
 from django.http import JsonResponse
 import json
-from .models import Student, Job, Company, Resume
+from .models import Student, Job, Company, Resume, Interest, Seminar
 import random, string
 
+max_pop = 0
 
 # 学生注册
 @require_http_methods(["GET"])
@@ -19,6 +22,10 @@ def add_student(request):
                           sgrade=request.GET.get('sgrade'), sschool=request.GET.get('sschool'),
                           smajor=request.GET.get('smajor'))
         student.save()
+        resume = Resume(resumeid=genRandomString(10), sname=student.sname, sgrade=student.sgrade,
+                        sschool=student.sschool, smajor=student.smajor,
+                        student_studentid=Student.objects.get(sloginid=request.GET.get('sloginid')))
+        resume.save()
         response['msg'] = 'success'
         response['error_num'] = 0
     except  Exception as e:
@@ -52,7 +59,7 @@ def student_login(request):
         sloginid_input = request.GET.get('sloginid')
         spassword_input = request.GET.get('spassword')
         spassword_db = Student.objects.get(sloginid=sloginid_input)
-        if spassword_input == spassword_db:
+        if spassword_input == spassword_db.spassword:
             response['msg'] = 'success'
             response['error_num'] = 0
         else:
@@ -89,7 +96,7 @@ def company_login(request):
         cloginid_input = request.GET.get('cloginid')
         cpassword_input = request.GET.get('cpassword')
         cpassword_db = Company.objects.get(cloginid=cloginid_input)
-        if cpassword_input == cpassword_db:
+        if cpassword_input == cpassword_db.cpassword:
             response['msg'] = 'success'
             response['error_num'] = 0
         else:
@@ -101,11 +108,30 @@ def company_login(request):
     return JsonResponse(response)
 
 
+# 填写公司信息
+@require_http_methods(["GET"])
+def add_companyForm(request):
+    response = {}
+    try:
+        company = Company.objects.get(cname=request.GET.get('cname'))
+        company.scale = request.GET.get('scale')
+        company.industry = request.GET.get('industry')
+        response['msg'] = 'success'
+        response['error_num'] = 0
+
+    except  Exception as e:
+        response['msg'] = str(e)
+        response['error_num'] = 1
+    return JsonResponse(response)
+
+
 # 添加招聘信息
 @require_http_methods(["GET"])
 def add_job(request):
     response = {}
     try:
+        # @todo interact with syn
+        # @todo add job tag -- int
         # jobinfo = json.loads(request.GET.get('jobinfo'))
         job = Job(jobid=genRandomString(), jobinfo=request.GET.get('jobinfo'),
                   company_companyid=Company.objects.get(cloginid=request.GET.get('companyid')))
@@ -118,17 +144,46 @@ def add_job(request):
     return JsonResponse(response)
 
 
+# 查看招聘信息
+@require_http_methods(["GET"])
+def show_job(request):
+    response = {}
+    global max_pop
+    try:
+        sloginid_input = request.GET.get('sloginid')
+        jobtag = request.GET.get('jobtag')
+        job = Job.objects.get(jname=request.GET.get('jname'))
+        job.jobpop += 1
+        if job.jobpop > max_pop:
+            max_pop = job.jobpop
+        # @todo chage by view time
+        response['jname'] = job.jname
+        response['salary'] = job.salary
+        response['jplace'] = job.jplace
+        response['msg'] = 'success'
+        response['error_num'] = 0
+
+    except Exception as e:
+        response['msg'] = str(e)
+        response['error_num'] = 1
+    return JsonResponse(response)
+
+
 # 添加简历
 @require_http_methods(["GET"])
 def add_resume(request):
     response = {}
     try:
+        initial_resume = Resume.objects.get(
+            student_studentid=Student.objects.get(sloginid=request.GET.get('studentid')))
+        initial_resume.delete()
+        student = Student.objects.get(sloginid=request.GET.get('studentid'))
         resume = Resume(resumeid=genRandomString(10),
-                        student_studentid=Student.objects.get(sloginid=request.GET.get('studentid')),
-                        sname=request.GET.get('sname'), sgrade=request.GET.get('sgrade'),
-                        sschool=request.GET.get('sschool'),
-                        smajor=request.GET.get('smajor'), skillinfo=request.GET.get('skillinfo'),
-                        selfintro=request.GET.get('selfintro'),
+                        student_studentid=student,
+                        sname=student.sname, sgrade=student.sgrade,
+                        sschool=student.sschool,
+                        smajor=student.smajor, skillinfo=request.GET.get('skillinfo'),
+                        selfintro=request.GET.get('selfintro'), detail=request.GET.get('detail'),
                         tel=request.GET.get('tel'), email=request.GET.get('email'),
                         edubegin=request.GET.get('edubegin'), eduend=request.GET.get('eduend'),
                         cname=request.GET.get('cname'), industry=request.GET.get('industry'),
@@ -157,7 +212,7 @@ def edit_resume(request):
                         sname=request.GET.get('sname'), sgrade=request.GET.get('sgrade'),
                         sschool=request.GET.get('sschool'),
                         smajor=request.GET.get('smajor'), skillinfo=request.GET.get('skillinfo'),
-                        selfintro=request.GET.get('selfintro'),
+                        selfintro=request.GET.get('selfintro'), detail=request.GET.get('detail'),
                         tel=request.GET.get('tel'), email=request.GET.get('email'),
                         edubegin=request.GET.get('edubegin'), eduend=request.GET.get('eduend'),
                         cname=request.GET.get('cname'), industry=request.GET.get('industry'),
@@ -179,7 +234,7 @@ def show_resume(request):
     response = {}
     try:
         sloginid_input = request.GET.get('sloginid')
-        resume_db = Resume.objects.get(student_studentid=sloginid_input)
+        resume_db = Resume.objects.get(student_studentid=Student.objects.get(sloginid=sloginid_input))
         response['sname'] = resume_db.sname
         response['sgrade'] = resume_db.sgrade
         response['sschool'] = resume_db.sschool
@@ -196,6 +251,7 @@ def show_resume(request):
         response['place'] = resume_db.place
         response['expbegin'] = resume_db.expbegin
         response['expend'] = resume_db.expend
+        response['detail'] = resume_db.detail
         response['msg'] = 'success'
         response['error_num'] = 0
     except Exception as e:
@@ -206,7 +262,7 @@ def show_resume(request):
 
 # 推荐招聘信息
 @require_http_methods(["GET"])
-def show_recommend_jobs(request):
+def get_recommend_jobs(request):
     response = {}
     try:
         sloginid_input = request.GET.get('sloginid')
@@ -257,3 +313,106 @@ def get_student_data(request):
 
 def genRandomString(slen=10):
     return ''.join(random.sample(string.ascii_letters + string.digits, slen))
+
+
+# @todo add jobpop when click on the job
+# @todo initialize jobpop
+# @todo change weight of interest when click on the job
+# @todo add job tag when add job info
+
+
+# this function is a test case for recommendation by pop
+def recommendation_by_jobpop():
+    s = []
+    job_list = []
+    for i in Job.objects.all():
+        job_list.append(i.jobid, i.jobpop)
+
+    for i in range(len(job_list)):
+        for j in range(0, len(job_list) - i - 1):
+            if job_list[j].jobpop < job_list[j + 1].jobpop:
+                job_list[j], job_list[j + 1] = job_list[j + 1], job_list[j]
+
+    while (len(s) < 2):
+        x = random.randint(0, 99)
+        if job_list[x].jobid not in s:
+            s.append(job_list[x].jobid)
+    # s中存储了推荐招聘信息的id，查询并返回招聘信息内容即可
+    return s
+
+
+# this function is a test case for recommendation by tag
+def recommendation_by_tag(stdid):
+    interest = Interest.objects.get(sloginid=stdid)
+    # 填需要查询的学生的id
+    tag = []
+    LENGTH_OF_INTEREST = 3
+    # tag.append(interest.互联网)
+    # tag.append(interest.it)
+    # tag.append(interest.金融)
+    for i in range(3):
+        tag.append(interest.i)
+
+    # 需要将json格式的数组读取到这个数组里
+    arr = [i for i in range(len(tag))]
+
+    for i in range(len(tag)):
+        for j in range(0, len(tag) - i - 1):
+            if tag[j] < tag[j + 1]:
+                tag[j], tag[j + 1] = tag[j + 1], tag[j]
+                arr[j], arr[j + 1] = arr[j + 1], arr[j]
+
+    s = []
+    while (len(s) < 3):
+        x = random.randint(0, 9)
+        if arr[x] not in s:
+            s.append(arr[x])
+
+    jobid_list = []
+
+    for i in range(3):
+        job_list = []
+        for j in Job.objects.filter(tag=arr[i]):
+            job_list.append(j.jobid, j.jobpop)
+
+        for k in range(len(job_list)):
+            for l in range(0, len(job_list) - k - 1):
+                if job_list[l].jobpop < job_list[l + 1].jobpop:
+                    job_list[l], job_list[l + 1] = job_list[l + 1], job_list[l]
+
+        x = random.randint(0, 19)
+        jobid_list.append(job_list[x].jobid)
+        # jobid_list中保存了根据tag选出的3个招聘信息的id，返回根据id查询得到的招聘信息即可
+    return jobid_list
+
+
+# this function is a test case for recommendation by pop
+def recommendation_by_seminarpop():
+    s = []
+    seminar_list = []
+    for i in Seminar.objects.all():
+        seminar_list.append(i.seminarid, i.seminarpop)
+
+    for i in range(len(seminar_list)):
+        for j in range(0, len(seminar_list) - i - 1):
+            if seminar_list[j].seminarpop < seminar_list[j + 1].seminarpop:
+                seminar_list[j], seminar_list[j + 1] = seminar_list[j + 1], seminar_list[j]
+
+    while (len(s) < 2):
+        x = random.randint(0, 99)
+        if seminar_list[x].seminarid not in s:
+            s.append(seminar_list[x].seminarid)
+    # s中存储了推荐宣讲会的id，查询并返回宣讲会内容即可
+    return s
+
+
+def key_word_recommendation():
+    key_word = Enum('name', ('销售', '客服', '人事', '餐饮', '旅游',
+                             '物业', '健身', '房产中介', '家政', '交通服务', '财务', '法律',
+                             '翻译', '编辑', '计算机', '投资', '证券', '医疗', '服装', '制药', '公关'))
+    s = []
+    while (len(s) < 3):
+        x = random.randint(1, 21)
+        if key_word(x).name not in s:
+            s.append(key_word(x).name)
+    return s

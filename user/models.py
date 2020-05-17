@@ -81,6 +81,8 @@ class Company(models.Model):
     cname = models.CharField(max_length=10, blank=True, null=True)
     ctel = models.CharField(max_length=45, blank=True, null=True)
     caddress = models.CharField(max_length=45, blank=True, null=True)
+    industry = models.CharField(max_length=10, blank=True, null=True)
+    scale = models.CharField(max_length=20, blank=True, null=True)
 
     class Meta:
         managed = False
@@ -131,12 +133,28 @@ class DjangoSession(models.Model):
         db_table = 'django_session'
 
 
+class Interest(models.Model):
+    sloginid = models.CharField(primary_key=True, max_length=45)
+    number_1 = models.FloatField(db_column='1', blank=True,
+                                 null=True)  # Field renamed because it wasn't a valid Python identifier.
+    number_2 = models.FloatField(db_column='2', blank=True,
+                                 null=True)  # Field renamed because it wasn't a valid Python identifier.
+    number_3 = models.FloatField(db_column='3', blank=True,
+                                 null=True)  # Field renamed because it wasn't a valid Python identifier.
+
+    class Meta:
+        managed = False
+        db_table = 'interest'
+
+
 class Job(models.Model):
     jobid = models.CharField(primary_key=True, max_length=10)
-    jobinfo = models.TextField(blank=True, null=True)  # This field type is a guess.
+    jname = models.CharField(max_length=20, blank=True, null=True)
     company_companyid = models.ForeignKey(Company, models.DO_NOTHING, db_column='company_companyid')
-    pop = models.IntegerField(blank=True, null=True)
+    jobpop = models.IntegerField(blank=True, null=True)
     tag = models.IntegerField(blank=True, null=True)
+    salary = models.CharField(max_length=20, blank=True, null=True)
+    jplace = models.CharField(max_length=10, blank=True, null=True)
 
     class Meta:
         managed = False
@@ -169,22 +187,23 @@ class LoginUser(models.Model):
 class Resume(models.Model):
     resumeid = models.CharField(primary_key=True, max_length=10)
     sname = models.CharField(max_length=10, blank=True, null=True)
-    sgrade = models.IntegerField(blank=True, null=True)
+    sgrade = models.CharField(max_length=10, blank=True, null=True)
     sschool = models.CharField(max_length=45, blank=True, null=True)
     smajor = models.CharField(max_length=45, blank=True, null=True)
-    skillinfo = models.TextField(blank=True, null=True)  # This field type is a guess.
-    selfintro = models.TextField(blank=True, null=True)  # This field type is a guess.
+    skillinfo = models.CharField(max_length=45, blank=True, null=True)
+    selfintro = models.CharField(max_length=45, blank=True, null=True)
     student_studentid = models.ForeignKey('Student', models.DO_NOTHING, db_column='student_studentid')
     tel = models.CharField(max_length=11, blank=True, null=True)
     email = models.CharField(max_length=45, blank=True, null=True)
-    edubegin = models.IntegerField(blank=True, null=True)
-    eduend = models.IntegerField(blank=True, null=True)
+    edubegin = models.CharField(max_length=20, blank=True, null=True)
+    eduend = models.CharField(max_length=20, blank=True, null=True)
     cname = models.CharField(max_length=45, blank=True, null=True)
     industry = models.CharField(max_length=45, blank=True, null=True)
     pname = models.CharField(max_length=45, blank=True, null=True)
     place = models.CharField(max_length=45, blank=True, null=True)
-    expbegin = models.IntegerField(blank=True, null=True)
-    expend = models.IntegerField(blank=True, null=True)
+    expbegin = models.CharField(max_length=20, blank=True, null=True)
+    expend = models.CharField(max_length=20, blank=True, null=True)
+    detail = models.CharField(max_length=45, blank=True, null=True)
 
     class Meta:
         managed = False
@@ -197,6 +216,7 @@ class Seminar(models.Model):
     splace = models.CharField(max_length=45, blank=True, null=True)
     stheme = models.CharField(max_length=45, blank=True, null=True)
     company_companyid = models.ForeignKey(Company, models.DO_NOTHING, db_column='company_companyid')
+    seminarpop = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = False
@@ -219,11 +239,10 @@ class Student(models.Model):
     sloginid = models.CharField(max_length=10, blank=True, null=True)
     spassword = models.CharField(max_length=45, blank=True, null=True)
     sname = models.CharField(max_length=10, blank=True, null=True)
-    sgrade = models.IntegerField(blank=True, null=True)
+    sgrade = models.CharField(max_length=10, blank=True, null=True)
     sschool = models.CharField(max_length=45, blank=True, null=True)
     smajor = models.CharField(max_length=45, blank=True, null=True)
     stel = models.CharField(max_length=45, blank=True, null=True)
-    interest = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
         managed = False
