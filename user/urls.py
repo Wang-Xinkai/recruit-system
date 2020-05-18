@@ -7,4 +7,4 @@ urlpatterns = [url(r'add_student$', views.add_student, ), url(r'show_students$',
                url(r'student_login$', views.student_login, ), url(r'company_login$', views.company_login, ),
                url(r'add_job$', views.add_job, ), url(r'add_resume$', views.add_resume, ),
                url(r'edit_resume$', views.edit_resume, ), url(r'show_job$', views.show_job, ),
-               url(r'show_resume$', views.show_resume, ), url(r'show_recommend_jobs$', views.show_recommend_jobs, ), ]
+               url(r'show_resume$', views.show_resume, ), url(r'get_recommend_job$', views.get_recommend_jobs, ), ]

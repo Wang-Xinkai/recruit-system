@@ -9,7 +9,7 @@ from django.db import models
 
 
 class AuthGroup(models.Model):
-    name = models.CharField(unique=True, max_length=80)
+    name = models.CharField(unique=True, max_length=150)
 
     class Meta:
         managed = False
@@ -41,9 +41,9 @@ class AuthUser(models.Model):
     password = models.CharField(max_length=128)
     last_login = models.DateTimeField(blank=True, null=True)
     is_superuser = models.IntegerField()
-    username = models.CharField(unique=True, max_length=30)
+    username = models.CharField(unique=True, max_length=150)
     first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=150)
     email = models.CharField(max_length=254)
     is_staff = models.IntegerField()
     is_active = models.IntegerField()
@@ -131,20 +131,6 @@ class DjangoSession(models.Model):
     class Meta:
         managed = False
         db_table = 'django_session'
-
-
-class Interest(models.Model):
-    sloginid = models.CharField(primary_key=True, max_length=45)
-    number_1 = models.FloatField(db_column='1', blank=True,
-                                 null=True)  # Field renamed because it wasn't a valid Python identifier.
-    number_2 = models.FloatField(db_column='2', blank=True,
-                                 null=True)  # Field renamed because it wasn't a valid Python identifier.
-    number_3 = models.FloatField(db_column='3', blank=True,
-                                 null=True)  # Field renamed because it wasn't a valid Python identifier.
-
-    class Meta:
-        managed = False
-        db_table = 'interest'
 
 
 class Job(models.Model):
@@ -243,6 +229,7 @@ class Student(models.Model):
     sschool = models.CharField(max_length=45, blank=True, null=True)
     smajor = models.CharField(max_length=45, blank=True, null=True)
     stel = models.CharField(max_length=45, blank=True, null=True)
+    interest = models.CharField(max_length=30, blank=True, null=True)
 
     class Meta:
         managed = False

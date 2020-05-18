@@ -7,27 +7,34 @@ from django.views.decorators.http import require_http_methods
 from django.core import serializers
 from django.http import JsonResponse
 import json
-from .models import Student, Job, Company, Resume, Interest, Seminar
+from .models import Student, Job, Company, Resume, Seminar
 import random, string
 
 max_pop = 0
 
+
 # 学生注册
+# 学生id为随机生成的长度为10的字符串，为伪主键（可能出现重复）。
+# 之后为简化实现，均使用 sloginid（注册id）作为主键进行查询
 @require_http_methods(["GET"])
 def add_student(request):
     response = {}
     try:
+        # 新建学生
         student = Student(studentid=genRandomString(), sloginid=request.GET.get('sloginid'),
                           spassword=request.GET.get('spassword'), sname=request.GET.get('sname'),
                           sgrade=request.GET.get('sgrade'), sschool=request.GET.get('sschool'),
-                          smajor=request.GET.get('smajor'))
+                          smajor=request.GET.get('smajor'), interest="", stel="")
         student.save()
+        # 根据注册填写信息初始化一份简历
         resume = Resume(resumeid=genRandomString(10), sname=student.sname, sgrade=student.sgrade,
                         sschool=student.sschool, smajor=student.smajor,
                         student_studentid=Student.objects.get(sloginid=request.GET.get('sloginid')))
         resume.save()
+        # 返回前端response
         response['msg'] = 'success'
         response['error_num'] = 0
+    # 处理异常
     except  Exception as e:
         response['msg'] = str(e)
         response['error_num'] = 1
@@ -35,14 +42,19 @@ def add_student(request):
 
 
 # 获取学生的初始兴趣
+# 兴趣字段需要在新建学生时进行初始化！！！然后以空格分割的字符串形式存入数据库
 @require_http_methods(["GET"])
 def get_initial_interest(request):
     response = {}
     try:
+        # 找到学生并且初始化兴趣
         sloginid_input = request.GET.get('sloginid')
         interest_input = request.GET.getlist('interest')
         student = Student.objects.get(sloginid=sloginid_input)
-        student.interest = interest_input
+        for i in interest_input:
+            student.interest = student.interest + str(i) + " "
+        student.save()
+        # 返回前端response
         response['msg'] = 'success'
         response['error_num'] = 0
     except Exception as e:
@@ -56,6 +68,7 @@ def get_initial_interest(request):
 def student_login(request):
     response = {}
     try:
+        # 找到学生并对比密码
         sloginid_input = request.GET.get('sloginid')
         spassword_input = request.GET.get('spassword')
         spassword_db = Student.objects.get(sloginid=sloginid_input)
@@ -78,7 +91,8 @@ def add_company(request):
     try:
         company = Company(companyid=genRandomString(), cloginid=request.GET.get('cloginid'),
                           cpassword=request.GET.get('cpassword'), cname=request.GET.get('cname'),
-                          ctel=request.GET.get('ctel'), caddress=request.GET.get('caddress'))
+                          ctel=request.GET.get('ctel'), caddress=request.GET.get('caddress'),
+                          industry="")
         company.save()
         response['msg'] = 'success'
         response['error_num'] = 0
@@ -109,6 +123,7 @@ def company_login(request):
 
 
 # 填写公司信息
+# @todo 1st function to be done
 @require_http_methods(["GET"])
 def add_companyForm(request):
     response = {}
@@ -126,15 +141,16 @@ def add_companyForm(request):
 
 
 # 添加招聘信息
+# @todo 2nd function to be done
 @require_http_methods(["GET"])
 def add_job(request):
     response = {}
     try:
-        # @todo interact with syn
-        # @todo add job tag -- int
         # jobinfo = json.loads(request.GET.get('jobinfo'))
         job = Job(jobid=genRandomString(), jobinfo=request.GET.get('jobinfo'),
-                  company_companyid=Company.objects.get(cloginid=request.GET.get('companyid')))
+                  company_companyid=Company.objects.get(cloginid=request.GET.get('companyid')),
+                  tag=request.GET.get('jobtag'), jname=request.GET.get('jname'),
+                  jobpop=0, salary=request.GET.get('salary'), jplace=request.GET.get('jplace'))
         job.save()
         response['msg'] = 'success'
         response['error_num'] = 0
@@ -145,6 +161,7 @@ def add_job(request):
 
 
 # 查看招聘信息
+# @todo chage by view time
 @require_http_methods(["GET"])
 def show_job(request):
     response = {}
@@ -152,11 +169,11 @@ def show_job(request):
     try:
         sloginid_input = request.GET.get('sloginid')
         jobtag = request.GET.get('jobtag')
+        # 更改招聘信息热度
         job = Job.objects.get(jname=request.GET.get('jname'))
         job.jobpop += 1
         if job.jobpop > max_pop:
             max_pop = job.jobpop
-        # @todo chage by view time
         response['jname'] = job.jname
         response['salary'] = job.salary
         response['jplace'] = job.jplace
@@ -170,6 +187,7 @@ def show_job(request):
 
 
 # 添加简历
+# @todo 添加最后两拦信息
 @require_http_methods(["GET"])
 def add_resume(request):
     response = {}
@@ -266,8 +284,8 @@ def get_recommend_jobs(request):
     response = {}
     try:
         sloginid_input = request.GET.get('sloginid')
-        # jobs = recommendation_by_tag(sloginid_input)
-        jobs = {}
+        jobs = recommendation_by_tag(sloginid_input)
+        # jobs = {}
         i = 0
         for item in jobs:
             response[i] = Job.objects.get(jobid=item)
@@ -315,10 +333,7 @@ def genRandomString(slen=10):
     return ''.join(random.sample(string.ascii_letters + string.digits, slen))
 
 
-# @todo add jobpop when click on the job
-# @todo initialize jobpop
 # @todo change weight of interest when click on the job
-# @todo add job tag when add job info
 
 
 # this function is a test case for recommendation by pop
@@ -342,18 +357,14 @@ def recommendation_by_jobpop():
 
 
 # this function is a test case for recommendation by tag
+# 已经可以将存储的兴趣列表转化为list
 def recommendation_by_tag(stdid):
-    interest = Interest.objects.get(sloginid=stdid)
-    # 填需要查询的学生的id
-    tag = []
-    LENGTH_OF_INTEREST = 3
-    # tag.append(interest.互联网)
-    # tag.append(interest.it)
-    # tag.append(interest.金融)
-    for i in range(3):
-        tag.append(interest.i)
+    student = Student.objects.get(sloginid=stdid)
+    tag = student.interest.split()
+    # print(tag)
 
     # 需要将json格式的数组读取到这个数组里
+    # reply：没有json文件了，tag是兴趣的list
     arr = [i for i in range(len(tag))]
 
     for i in range(len(tag)):
