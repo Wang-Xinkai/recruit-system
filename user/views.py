@@ -7,7 +7,7 @@ from django.views.decorators.http import require_http_methods
 from django.core import serializers
 from django.http import JsonResponse
 import json
-from .models import Student, Job, Company, Resume, Seminar
+from .models import Student, Job, Company, Resume, Seminar, Interview
 import random, string
 
 max_pop = 0
@@ -126,8 +126,7 @@ def company_login(request):
     return JsonResponse(response)
 
 
-# 填写公司信息
-# @todo 1st function to be done
+# 填写companyForm
 @require_http_methods(["GET"])
 def add_companyForm(request):
     response = {}
@@ -144,17 +143,153 @@ def add_companyForm(request):
     return JsonResponse(response)
 
 
+# 展示companyForm
+@require_http_methods(["GET"])
+def show_companyForm(request):
+    response = {}
+    try:
+        company = Company.objects.get(cloginid=request.GET.get('cloginid'))
+        response['cname'] = company.cname
+        response['ctel'] = company.ctel
+        response['caddress'] = company.caddress
+        response['industry'] = company.industry
+        response['scale'] = company.scale
+        response['msg'] = 'success'
+        response['error_num'] = 0
+
+    except  Exception as e:
+        response['msg'] = str(e)
+        response['error_num'] = 1
+    return JsonResponse(response)
+
+
+# 返回所有招聘信息id，接受cloginid参数
+@require_http_methods(["GET"])
+def return_jobs(request):
+    response = {}
+    try:
+        company = Company.objects.get(cloginid=request.GET.get('cloginid'))
+        jobs = Job.objects.filter(company_companyid=company)
+        for i in range(len(jobs)):
+            response['jobids'] = response['jobids'] + jobs[i].jobid + " "
+        for i in range(len(jobs)):
+            response['jname'] = response['jname'] + jobs[i].jname + " "
+        for i in range(len(jobs)):
+            response['salary'] = response['salary'] + jobs[i].salary + " "
+        for i in range(len(jobs)):
+            response['jplace'] = response['jplace'] + jobs[i].jplace + " "
+        response['msg'] = 'success'
+        response['error_num'] = 0
+
+    except  Exception as e:
+        response['msg'] = str(e)
+        response['error_num'] = 1
+    return JsonResponse(response)
+
+
+# 返回所有关联查询招聘信息的简历，接受招聘信息id
+@require_http_methods(["GET"])
+def return_resumes(request):
+    response = {}
+    try:
+        job = Job.objects.get(jobid=request.GET.get('jobid'))
+        resumelist = job.resumes.split()
+        for i in range(len(resumelist)):
+            response['sname'] = response['sname'] + resumelist[i].sname + " "
+        for i in range(len(resumelist)):
+            response['sgrade'] = response['sgrade'] + resumelist[i].sgrade + " "
+        for i in range(len(resumelist)):
+            response['sschool'] = response['sschool'] + resumelist[i].sschool + " "
+        for i in range(len(resumelist)):
+            response['smajor'] = response['smajor'] + resumelist[i].smajor + " "
+        for i in range(len(resumelist)):
+            response['tel'] = response['tel'] + resumelist[i].tel + " "
+        for i in range(len(resumelist)):
+            response['email'] = response['email'] + resumelist[i].email + " "
+        for i in range(len(resumelist)):
+            response['skillinfo'] = response['skillinfo'] + resumelist[i].skillinfo + " "
+        for i in range(len(resumelist)):
+            response['selfintro'] = response['selfintro'] + resumelist[i].sname + " "
+        response['msg'] = 'success'
+        response['error_num'] = 0
+
+    except  Exception as e:
+        response['msg'] = str(e)
+        response['error_num'] = 1
+    return JsonResponse(response)
+
+
+# 发送面试邀请，接受简历id参数
+@require_http_methods(["GET"])
+def interview(request):
+    response = {}
+    try:
+        resume_input = request.GET.get('resumeid')
+        resume = Resume.objects.get(resumeid=resume_input)
+        studentid = resume.student_studentid.sloginid
+        interview = Interview(interviewid=genRandomString(10), iname=request.GET.get('iname'),
+                              itime=request.GET.get('itime'), studentid=studentid)
+        interview.save()
+        response['msg'] = 'success'
+        response['error_num'] = 0
+
+    except  Exception as e:
+        response['msg'] = str(e)
+        response['error_num'] = 1
+    return JsonResponse(response)
+
+
+# 查看面试消息
+@require_http_methods(["GET"])
+def show_interview(request):
+    response = {}
+    try:
+        sloginid_input = request.GET.get('sloginid')
+        interviews = Interview.objects.filter(studentid=sloginid_input)
+        for i in range(len(interviews)):
+            response['iname'] = response['iname'] + interviews[i].iname + " "
+        for i in range(len(interviews)):
+            response['itime'] = response['itime'] + interviews[i].itime + " "
+        response['msg'] = 'success'
+        response['error_num'] = 0
+
+    except  Exception as e:
+        response['msg'] = str(e)
+        response['error_num'] = 1
+    return JsonResponse(response)
+
+
+# 创建宣讲会
+@require_http_methods(["GET"])
+def add_seminar(request):
+    response = {}
+    try:
+        seminartag = request.GET.getlist('stheme')
+        c = " ".join(seminartag)
+        seminar = Seminar(seminarid=genRandomString(10), sname=request.GET.get('sname'),
+                          sschool=request.GET.get('sschool'), splace=request.GET.get('splace'),
+                          stime=request.GET.get('stime'), stheme=c, sinfo=request.GET.get('sinfo'))
+        seminar.save()
+        response['msg'] = 'success'
+        response['error_num'] = 0
+
+    except Exception as e:
+        response['msg'] = str(e)
+        response['error_num'] = 1
+    return JsonResponse(response)
+
+
 # 添加招聘信息
-# @todo 2nd function to be done
 @require_http_methods(["GET"])
 def add_job(request):
     response = {}
     try:
         # jobinfo = json.loads(request.GET.get('jobinfo'))
-        job = Job(jobid=genRandomString(), jobinfo=request.GET.get('jobinfo'),
+        job = Job(jobid=genRandomString(),
                   company_companyid=Company.objects.get(cloginid=request.GET.get('companyid')),
                   tag=request.GET.get('jobtag'), jname=request.GET.get('jname'),
-                  jobpop=0, salary=request.GET.get('salary'), jplace=request.GET.get('jplace'))
+                  jobpop=0, salary=request.GET.get('salary'), jplace=request.GET.get('jplace'),
+                  jcontent=request.GET.get('jcontent'), jrequirement=request.GET.get('jrequirement'))
         job.save()
         response['msg'] = 'success'
         response['error_num'] = 0

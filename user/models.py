@@ -133,6 +133,17 @@ class DjangoSession(models.Model):
         db_table = 'django_session'
 
 
+class Interview(models.Model):
+    interviewid = models.CharField(primary_key=True, max_length=10)
+    iname = models.CharField(max_length=10, blank=True, null=True)
+    itime = models.CharField(max_length=20, blank=True, null=True)
+    studentid = models.CharField(max_length=10, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'interview'
+
+
 class Job(models.Model):
     jobid = models.CharField(primary_key=True, max_length=10)
     jname = models.CharField(max_length=20, blank=True, null=True)
@@ -141,6 +152,9 @@ class Job(models.Model):
     tag = models.IntegerField(blank=True, null=True)
     salary = models.CharField(max_length=20, blank=True, null=True)
     jplace = models.CharField(max_length=10, blank=True, null=True)
+    jcontent = models.CharField(max_length=45, blank=True, null=True)
+    jrequirement = models.CharField(max_length=45, blank=True, null=True)
+    resumes = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
         managed = False
@@ -198,11 +212,14 @@ class Resume(models.Model):
 
 class Seminar(models.Model):
     seminarid = models.CharField(primary_key=True, max_length=10)
-    stime = models.DateTimeField(blank=True, null=True)
+    stime = models.CharField(max_length=20, blank=True, null=True)
     splace = models.CharField(max_length=45, blank=True, null=True)
     stheme = models.CharField(max_length=45, blank=True, null=True)
     company_companyid = models.ForeignKey(Company, models.DO_NOTHING, db_column='company_companyid')
     seminarpop = models.IntegerField(blank=True, null=True)
+    sname = models.CharField(max_length=20, blank=True, null=True)
+    sschool = models.CharField(max_length=10, blank=True, null=True)
+    sinfo = models.CharField(max_length=30, blank=True, null=True)
 
     class Meta:
         managed = False
