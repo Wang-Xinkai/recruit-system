@@ -11,6 +11,7 @@ from .models import Student, Job, Company, Resume, Seminar
 import random, string
 
 max_pop = 0
+MAX_INTEREST_LENGTH = 5
 
 
 # 学生注册
@@ -51,8 +52,11 @@ def get_initial_interest(request):
         sloginid_input = request.GET.get('sloginid')
         interest_input = request.GET.getlist('interest')
         student = Student.objects.get(sloginid=sloginid_input)
-        for i in interest_input:
-            student.interest = student.interest + str(i) + " "
+        for i in range(MAX_INTEREST_LENGTH):
+            if str(i) in interest_input:
+                student.interest = student.interest + "50" + " "
+            else:
+                student.interest = student.interest + "0" + " "
         student.save()
         # 返回前端response
         response['msg'] = 'success'
