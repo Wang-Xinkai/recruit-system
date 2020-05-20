@@ -300,7 +300,7 @@ def add_job(request):
 
 
 # 查看招聘信息
-# @todo chage by view time
+# @todo change by view time
 @require_http_methods(["GET"])
 def show_job(request):
     response = {}
@@ -309,7 +309,7 @@ def show_job(request):
         sloginid_input = request.GET.get('sloginid')
         jobtag = request.GET.get('jobtag')
         # 更改招聘信息热度
-        job = Job.objects.get(jname=request.GET.get('jname'))
+        job = Job.objects.get(jobid=request.GET.get('jobid'))
         job.jobpop += 1
         if job.jobpop > max_pop:
             max_pop = job.jobpop
@@ -425,10 +425,14 @@ def get_recommend_jobs(request):
         sloginid_input = request.GET.get('sloginid')
         jobs = recommendation_by_tag(sloginid_input)
         # jobs = {}
-        i = 0
         for item in jobs:
-            response[i] = Job.objects.get(jobid=item)
-            i = i + 1
+            response['jobids'] = response['jobids'] + item + " "
+        for item in jobs:
+            response['jnames'] = response['jnames'] + Job.objects.get(jobid=item).jname + " "
+        for item in jobs:
+            response['jsalarys'] = response['jsalarys'] + Job.objects.get(jobid=item).jsalary + " "
+        for item in jobs:
+            response['jplaces'] = response['jplaces'] + Job.objects.get(jobid=item).jplace + " "
         response['msg'] = 'success'
         response['error_num'] = 0
     except  Exception as e:
