@@ -94,22 +94,21 @@ def get_recommend_jobs(request):
     response = {}
     try:
         sloginid_input = request.GET.get('sloginid')
-        jobs = recommendation_by_tag(sloginid_input)
-        # jobs = {}
-        for item in jobs:
-            response['jobids'] = response['jobids'] + item + " "
-        for item in jobs:
-            response['jnames'] = response['jnames'] + Job.objects.get(jobid=item).jname + " "
-        for item in jobs:
-            response['jsalarys'] = response['jsalarys'] + Job.objects.get(jobid=item).jsalary + " "
-        for item in jobs:
-            response['jplaces'] = response['jplaces'] + Job.objects.get(jobid=item).jplace + " "
-        response['msg'] = 'success'
-        response['error_num'] = 0
+        # jobids = recommendation_by_tag(sloginid_input)
+        jobids = {"1234567890", "1243567890"}
+        jobs = set()
+        for item in jobids:
+            jobs.add(Job.objects.get(jobid=item))
+
+        return JsonResponse({
+            'error_num': '0',
+            'data': json.loads(serializers.serialize('json', jobs, ensure_ascii=False)),
+            'msg': "success"
+        })
     except  Exception as e:
         response['msg'] = str(e)
         response['error_num'] = 1
-    return JsonResponse(response)
+        return JsonResponse(response)
 
 
 # 推荐宣讲会
@@ -118,25 +117,19 @@ def get_recommend_talks(request):
     response = {}
     try:
         sloginid_input = request.GET.get('sloginid')
-        talks = recommendation_by_seminarpop()
-        for item in talks:
-            response['seminarids'] = response['seminarids'] + item + " "
-        for item in talks:
-            response['stimes'] = response['stimes'] + Seminar.objects.get(seminarid=item).stime + " "
-        for item in talks:
-            response['splaces'] = response['splaces'] + Seminar.objects.get(seminarid=item).splace + " "
-        for item in talks:
-            response['sthemes'] = response['sthemes'] + Seminar.objects.get(seminarid=item).stheme + " "
-        for item in talks:
-            response['snames'] = response['snames'] + Seminar.objects.get(seminarid=item).sname + " "
-        for item in talks:
-            response['cnames'] = response['cnames'] + Seminar.objects.get(seminarid=item).company_companyid.cname + " "
-        response['msg'] = 'success'
-        response['error_num'] = 0
+        talkids = recommendation_by_seminarpop()
+        talks = set()
+        for item in talkids:
+            talks.add(Seminar.objects.get(seminarid=item))
+        return JsonResponse({
+            'error_num': '0',
+            'data': json.loads(serializers.serialize('json', talks, ensure_ascii=False)),
+            'msg': "success"
+        })
     except  Exception as e:
         response['msg'] = str(e)
         response['error_num'] = 1
-    return JsonResponse(response)
+        return JsonResponse(response)
 
 
 # 添加简历
@@ -256,9 +249,15 @@ def get_my_talk(request):
     try:
         sloginid_input = request.GET.get('sloginid')
         student = Student.objects.get(sloginid=sloginid_input)
-        response['talklist'] = student.talks
-        response['msg'] = 'success'
-        response['error_num'] = 0
+        talk_list = student.talks.split()
+        talks = set()
+        for item in talk_list:
+            talks.add(Seminar.objects.get(seminarid=item))
+        return JsonResponse({
+            'error_num': '0',
+            'data': json.loads(serializers.serialize('json', talks, ensure_ascii=False)),
+            'msg': "success"
+        })
 
     except Exception as e:
         response['msg'] = str(e)
@@ -293,12 +292,12 @@ def show_interview(request):
     try:
         sloginid_input = request.GET.get('sloginid')
         interviews = Interview.objects.filter(studentid=sloginid_input)
-        for i in range(len(interviews)):
-            response['iname'] = response['iname'] + interviews[i].iname + " "
-        for i in range(len(interviews)):
-            response['itime'] = response['itime'] + interviews[i].itime + " "
-        response['msg'] = 'success'
-        response['error_num'] = 0
+        return JsonResponse({
+            'error_num': '0',
+            'data': json.loads(serializers.serialize('json', interviews, ensure_ascii=False)),
+            'msg': "success"
+        })
+
 
     except  Exception as e:
         response['msg'] = str(e)
@@ -447,13 +446,19 @@ def show_seminar_students(request):
     try:
         seminarid_input = request.GET.get("seminarid")
         seminar = Seminar.objects.get(seminarid=seminarid_input)
-        response['students'] = seminar.students
-        response['msg'] = 'success'
-        response['error_num'] = 0
+        student_list = seminar.students.split()
+        students = set()
+        for item in student_list:
+            students.add(Student.objects.get(sloginid=item))
+        return JsonResponse({
+            'error_num': '0',
+            'data': json.loads(serializers.serialize('json', students, ensure_ascii=False)),
+            'msg': "success"
+        })
     except  Exception as e:
         response['msg'] = str(e)
         response['error_num'] = 1
-    return JsonResponse(response)
+        return JsonResponse(response)
 
 
 
@@ -464,21 +469,16 @@ def return_jobs(request):
     try:
         company = Company.objects.get(cloginid=request.GET.get('cloginid'))
         jobs = Job.objects.filter(company_companyid=company)
-        for i in range(len(jobs)):
-            response['jobids'] = response['jobids'] + jobs[i].jobid + " "
-        for i in range(len(jobs)):
-            response['jnames'] = response['jnames'] + jobs[i].jname + " "
-        for i in range(len(jobs)):
-            response['salarys'] = response['salarys'] + jobs[i].salary + " "
-        for i in range(len(jobs)):
-            response['jplaces'] = response['jplaces'] + jobs[i].jplace + " "
-        response['msg'] = 'success'
-        response['error_num'] = 0
+        return JsonResponse({
+            'error_num': '0',
+            'data': json.loads(serializers.serialize('json', jobs, ensure_ascii=False)),
+            'msg': "success"
+        })
 
     except  Exception as e:
         response['msg'] = str(e)
         response['error_num'] = 1
-    return JsonResponse(response)
+        return JsonResponse(response)
 
 
 # 返回所有关联查询招聘信息的简历，接受招聘信息id
@@ -488,29 +488,19 @@ def return_resumes(request):
     try:
         job = Job.objects.get(jobid=request.GET.get('jobid'))
         resumelist = job.resumes.split()
-        for i in range(len(resumelist)):
-            response['snasme'] = response['sname'] + Resume.objects.get(resumeid=resumelist[i]).sname + " "
-        for i in range(len(resumelist)):
-            response['sgrade'] = response['sgrade'] + Resume.objects.get(resumeid=resumelist[i]).sgrade + " "
-        for i in range(len(resumelist)):
-            response['sschool'] = response['sschool'] + Resume.objects.get(resumeid=resumelist[i]).sschool + " "
-        for i in range(len(resumelist)):
-            response['smajor'] = response['smajor'] + Resume.objects.get(resumeid=resumelist[i]).smajor + " "
-        for i in range(len(resumelist)):
-            response['tel'] = response['tel'] + Resume.objects.get(resumeid=resumelist[i]).tel + " "
-        for i in range(len(resumelist)):
-            response['email'] = response['email'] + Resume.objects.get(resumeid=resumelist[i]).email + " "
-        for i in range(len(resumelist)):
-            response['skillinfo'] = response['skillinfo'] + Resume.objects.get(resumeid=resumelist[i]).skillinfo + " "
-        for i in range(len(resumelist)):
-            response['selfintro'] = response['selfintro'] + Resume.objects.get(resumeid=resumelist[i]).selfintro + " "
-        response['msg'] = 'success'
-        response['error_num'] = 0
+        resumes = set()
+        for item in resumelist:
+            resumes.add(Resume.objects.get(resumeid=item))
+        return JsonResponse({
+            'error_num': '0',
+            'data': json.loads(serializers.serialize('json', resumes, ensure_ascii=False)),
+            'msg': "success"
+        })
 
     except  Exception as e:
         response['msg'] = str(e)
         response['error_num'] = 1
-    return JsonResponse(response)
+        return JsonResponse(response)
 
 
 # 发送面试邀请，接受简历id参数
@@ -532,8 +522,6 @@ def interview(request):
         response['error_num'] = 1
     return JsonResponse(response)
 
-
-r
 
 
 # 创建宣讲会
