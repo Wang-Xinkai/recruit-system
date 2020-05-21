@@ -83,6 +83,13 @@ class Company(models.Model):
     caddress = models.CharField(max_length=45, blank=True, null=True)
     industry = models.CharField(max_length=10, blank=True, null=True)
     scale = models.CharField(max_length=20, blank=True, null=True)
+    registerdate = models.CharField(db_column='registerDate', max_length=20, blank=True,
+                                    null=True)  # Field name made lowercase.
+    registercapital = models.CharField(db_column='registerCapital', max_length=20, blank=True,
+                                       null=True)  # Field name made lowercase.
+    timelimit = models.CharField(db_column='timeLimit', max_length=20, blank=True,
+                                 null=True)  # Field name made lowercase.
+    business = models.CharField(max_length=45, blank=True, null=True)
 
     class Meta:
         managed = False
@@ -220,6 +227,7 @@ class Seminar(models.Model):
     sname = models.CharField(max_length=20, blank=True, null=True)
     sschool = models.CharField(max_length=10, blank=True, null=True)
     sinfo = models.CharField(max_length=30, blank=True, null=True)
+    students = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
         managed = False
@@ -247,6 +255,7 @@ class Student(models.Model):
     smajor = models.CharField(max_length=45, blank=True, null=True)
     stel = models.CharField(max_length=45, blank=True, null=True)
     interest = models.CharField(max_length=30, blank=True, null=True)
+    talks = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
         managed = False
