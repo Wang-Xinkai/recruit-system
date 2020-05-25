@@ -12,6 +12,7 @@ import random, string
 
 max_pop = 0
 MAX_INTEREST_LENGTH = 5
+loginuser = "student1"
 
 
 # 学生注册
@@ -25,7 +26,7 @@ def add_student(request):
         student = Student(studentid=genRandomString(), sloginid=request.GET.get('sloginid'),
                           spassword=request.GET.get('spassword'), sname=request.GET.get('sname'),
                           sgrade=request.GET.get('sgrade'), sschool=request.GET.get('sschool'),
-                          smajor=request.GET.get('smajor'), interest="", stel="")
+                          smajor=request.GET.get('smajor'), interest="", stel="", talks="", jobs="", trick=0)
         student.save()
         # 根据注册填写信息初始化一份简历
         resume = Resume(resumeid=genRandomString(10), sname=student.sname, sgrade=student.sgrade,
@@ -94,17 +95,27 @@ def get_recommend_jobs(request):
     response = {}
     try:
         sloginid_input = request.GET.get('sloginid')
-        # jobids = recommendation_by_tag(sloginid_input)
-        jobids = {"1234567890", "1243567890"}
+        student = Student.objects.get(sloginid=sloginid_input)
+        jobids = recommendation_by_jobpop()
+        jobids = jobids + recommendation_by_tag(sloginid_input)
+        # jobids = {"1234567890", "1243567890"}
         jobs = set()
         for item in jobids:
             jobs.add(Job.objects.get(jobid=item))
-
-        return JsonResponse({
-            'error_num': '0',
-            'data': json.loads(serializers.serialize('json', jobs, ensure_ascii=False)),
-            'msg': "success"
-        })
+        if student.trick == 1:
+            return JsonResponse({
+                'error_num': '0',
+                'data': json.loads(serializers.serialize('json', jobs, ensure_ascii=False)),
+                'msg': "success",
+                'time': "1"
+            })
+        else:
+            return JsonResponse({
+                'error_num': '0',
+                'data': json.loads(serializers.serialize('json', jobs, ensure_ascii=False)),
+                'msg': "success",
+                'time': "0"
+            })
     except  Exception as e:
         response['msg'] = str(e)
         response['error_num'] = 1
@@ -224,6 +235,38 @@ def show_resume(request):
     return JsonResponse(response)
 
 
+@require_http_methods(["GET"])
+def get_my_job(request):
+    response = {}
+    try:
+        sloginid_input = request.GET.get('sloginid')
+        student = Student.objects.get(sloginid=sloginid_input)
+        joblist = student.jobs.split()
+        print(joblist)
+        jobs = set()
+        for item in joblist:
+            jobs.add(Job.objects.get(jobid=item))
+
+        if student.trick == 0:
+            return JsonResponse({
+                'error_num': '0',
+                'data': json.loads(serializers.serialize('json', jobs, ensure_ascii=False)),
+                'msg': "success",
+                'time': '0'
+            })
+        else:
+            return JsonResponse({
+                'error_num': '0',
+                'data': json.loads(serializers.serialize('json', jobs, ensure_ascii=False)),
+                'msg': "success",
+                'time': '1'
+            })
+
+    except Exception as e:
+        response['msg'] = str(e)
+        response['error_num'] = 1
+        return JsonResponse(response)
+
 # 投递简历
 @require_http_methods(["GET"])
 def deliver_resume(request):
@@ -231,8 +274,16 @@ def deliver_resume(request):
     try:
         sloginid_input = request.GET.get('sloginid')
         jobid_input = request.GET.get('jobid')
+        # print("first +")
+        student = Student.objects.get(sloginid=sloginid_input)
+        student.jobs = student.jobs + jobid_input + " "
+        student.save()
+        # print(student.jobs)
         resumeid = Resume.objects.get(student_studentid=Student.objects.get(sloginid=sloginid_input)).resumeid
-        Job.objects.get(jobid=jobid_input).resumes = Job.objects.get(jobid=jobid_input).resumes + resumeid
+        # print("second +")
+        job = Job.objects.get(jobid=jobid_input)
+        job.resumes = job.resumes + resumeid + " "
+        job.save()
         response['msg'] = 'success'
         response['error_num'] = 0
 
@@ -271,11 +322,13 @@ def attend_talk(request):
     response = {}
     try:
         sloginid_input = request.GET.get('sloginid')
-        talkid = request.GET.get("talkid")
-        Student.objects.get(sloginid=sloginid_input).talks = Student.objects.get(
-            sloginid=sloginid_input).talks + talkid + " "
-        Seminar.objects.get(seminarid=talkid).students = Seminar.objects.get(
-            seminarid=talkid).students + sloginid_input + " "
+        seminarid_input = request.GET.get("seminarid")
+        student = Student.objects.get(sloginid=sloginid_input)
+        seminar = Seminar.objects.get(seminarid=seminarid_input)
+        student.talks = student.talks + seminarid_input + " "
+        seminar.students = seminar.students + sloginid_input + " "
+        student.save()
+        seminar.save()
         response['msg'] = 'success'
         response['error_num'] = 0
 
@@ -316,7 +369,7 @@ def show_job(request):
         jobtag = request.GET.get('jobtag')
         # 更改招聘信息热度
         job = Job.objects.get(jobid=request.GET.get('jobid'))
-        job.jobpop += 1
+        job.jobpop = job.jobpop + 1
         if job.jobpop > max_pop:
             max_pop = job.jobpop
         response['jname'] = job.jname
@@ -508,12 +561,15 @@ def return_resumes(request):
 def interview(request):
     response = {}
     try:
-        resume_input = request.GET.get('resumeid')
-        resume = Resume.objects.get(resumeid=resume_input)
-        studentid = resume.student_studentid.sloginid
-        interview = Interview(interviewid=genRandomString(10), iname=request.GET.get('iname'),
-                              itime=request.GET.get('itime'), studentid=studentid)
-        interview.save()
+        # resume_input = request.GET.get('resumeid')
+        # resume = Resume.objects.get(resumeid=resume_input)
+        student = Student.objects.get(sloginid=loginuser)
+        # studentid = resume.student_studentid.sloginid
+        student.trick = 1
+        student.save()
+        # interview = Interview(interviewid=genRandomString(10), iname=request.GET.get('iname'),
+        #                      itime=request.GET.get('itime'), studentid=studentid)
+        # interview.save()
         response['msg'] = 'success'
         response['error_num'] = 0
 
@@ -550,9 +606,10 @@ def add_job(request):
     response = {}
     try:
         # jobinfo = json.loads(request.GET.get('jobinfo'))
+        company = Company.objects.get(cloginid=request.GET.get('companyid'))
         job = Job(jobid=genRandomString(),
-                  company_companyid=Company.objects.get(cloginid=request.GET.get('companyid')),
-                  tag=request.GET.get('jobtag'), jname=request.GET.get('jname'),
+                  company_companyid=company,
+                  cname=company.cname, tag=request.GET.get('jobtag'), jname=request.GET.get('jname'),
                   jobpop=0, salary=request.GET.get('salary'), jplace=request.GET.get('jplace'),
                   jcontent=request.GET.get('jcontent'), jrequirement=request.GET.get('jrequirement'))
         job.save()
@@ -605,19 +662,24 @@ def genRandomString(slen=10):
 # this function is a test case for recommendation by pop
 def recommendation_by_jobpop():
     s = []
-    job_list = []
+    job_list1 = []
+    job_list2 = []
     for i in Job.objects.all():
-        job_list.append(i.jobid, i.jobpop)
+        job_list1.append(i.jobid)
+        job_list2.append(i.jobpop)
 
-    for i in range(len(job_list)):
-        for j in range(0, len(job_list) - i - 1):
-            if job_list[j].jobpop < job_list[j + 1].jobpop:
-                job_list[j], job_list[j + 1] = job_list[j + 1], job_list[j]
+    for i in range(len(job_list1)):
+        for j in range(0, len(job_list1) - i - 1):
+            print(type(job_list2[j]))
+            print(job_list2[j])
+            if job_list2[j] < job_list2[j + 1]:
+                job_list1[j], job_list1[j + 1] = job_list1[j + 1], job_list1[j]
+                job_list2[j], job_list2[j + 1] = job_list2[j + 1], job_list2[j]
 
     while (len(s) < 2):
-        x = random.randint(0, 99)
-        if job_list[x].jobid not in s:
-            s.append(job_list[x].jobid)
+        x = random.randint(0, 19)
+        if job_list1[x] not in s:
+            s.append(job_list1[x])
     # s中存储了推荐招聘信息的id，查询并返回招聘信息内容即可
     return s
 
@@ -627,7 +689,7 @@ def recommendation_by_jobpop():
 def recommendation_by_tag(stdid):
     student = Student.objects.get(sloginid=stdid)
     tag = student.interest.split()
-    # print(tag)
+    print(type(tag[0]))
 
     # 需要将json格式的数组读取到这个数组里
     # reply：没有json文件了，tag是兴趣的list
@@ -641,24 +703,27 @@ def recommendation_by_tag(stdid):
 
     s = []
     while (len(s) < 3):
-        x = random.randint(0, 9)
+        x = random.randint(0, 4)
         if arr[x] not in s:
             s.append(arr[x])
 
     jobid_list = []
 
     for i in range(3):
-        job_list = []
+        job_list1 = []
+        job_list2 = []
         for j in Job.objects.filter(tag=arr[i]):
-            job_list.append(j.jobid, j.jobpop)
+            job_list1.append(j.jobid)
+            job_list2.append(j.jobpop)
 
-        for k in range(len(job_list)):
-            for l in range(0, len(job_list) - k - 1):
-                if job_list[l].jobpop < job_list[l + 1].jobpop:
-                    job_list[l], job_list[l + 1] = job_list[l + 1], job_list[l]
+        for k in range(len(job_list1)):
+            for l in range(0, len(job_list1) - k - 1):
+                if job_list2[l] < job_list2[l + 1]:
+                    job_list1[l], job_list1[l + 1] = job_list1[l + 1], job_list1[l]
+                    job_list2[l], job_list2[l + 1] = job_list2[l + 1], job_list2[l]
 
-        x = random.randint(0, 19)
-        jobid_list.append(job_list[x].jobid)
+        x = random.randint(0, 3)
+        jobid_list.append(job_list1[x])
         # jobid_list中保存了根据tag选出的3个招聘信息的id，返回根据id查询得到的招聘信息即可
     return jobid_list
 
@@ -666,19 +731,22 @@ def recommendation_by_tag(stdid):
 # this function is a test case for recommendation by pop
 def recommendation_by_seminarpop():
     s = []
-    seminar_list = []
+    seminar_list1 = []
+    seminar_list2 = []
     for i in Seminar.objects.all():
-        seminar_list.append(i.seminarid, i.seminarpop)
+        seminar_list1.append(i.seminarid)
+        seminar_list2.append(i.seminarpop)
 
-    for i in range(len(seminar_list)):
-        for j in range(0, len(seminar_list) - i - 1):
-            if seminar_list[j].seminarpop < seminar_list[j + 1].seminarpop:
-                seminar_list[j], seminar_list[j + 1] = seminar_list[j + 1], seminar_list[j]
+    for i in range(len(seminar_list1)):
+        for j in range(0, len(seminar_list1) - i - 1):
+            if seminar_list2[j] < seminar_list2[j + 1]:
+                seminar_list1[j], seminar_list1[j + 1] = seminar_list1[j + 1], seminar_list1[j]
+                seminar_list2[j], seminar_list2[j + 1] = seminar_list2[j + 1], seminar_list2[j]
 
     while (len(s) < 2):
-        x = random.randint(0, 99)
-        if seminar_list[x].seminarid not in s:
-            s.append(seminar_list[x].seminarid)
+        x = random.randint(0, 19)
+        if seminar_list1[x] not in s:
+            s.append(seminar_list1[x])
     # s中存储了推荐宣讲会的id，查询并返回宣讲会内容即可
     return s
 

@@ -145,6 +145,7 @@ class Interview(models.Model):
     iname = models.CharField(max_length=10, blank=True, null=True)
     itime = models.CharField(max_length=20, blank=True, null=True)
     studentid = models.CharField(max_length=10, blank=True, null=True)
+    jobid = models.CharField(max_length=20, blank=True, null=True)
 
     class Meta:
         managed = False
@@ -162,6 +163,7 @@ class Job(models.Model):
     jcontent = models.CharField(max_length=45, blank=True, null=True)
     jrequirement = models.CharField(max_length=45, blank=True, null=True)
     resumes = models.CharField(max_length=50, blank=True, null=True)
+    cname = models.CharField(max_length=20, blank=True, null=True)
 
     class Meta:
         managed = False
@@ -228,6 +230,7 @@ class Seminar(models.Model):
     sschool = models.CharField(max_length=10, blank=True, null=True)
     sinfo = models.CharField(max_length=30, blank=True, null=True)
     students = models.CharField(max_length=50, blank=True, null=True)
+    cname = models.CharField(max_length=20, blank=True, null=True)
 
     class Meta:
         managed = False
@@ -256,6 +259,8 @@ class Student(models.Model):
     stel = models.CharField(max_length=45, blank=True, null=True)
     interest = models.CharField(max_length=30, blank=True, null=True)
     talks = models.CharField(max_length=50, blank=True, null=True)
+    jobs = models.CharField(max_length=50, blank=True, null=True)
+    trick = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = False
