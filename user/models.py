@@ -78,7 +78,7 @@ class Company(models.Model):
     companyid = models.CharField(primary_key=True, max_length=10)
     cloginid = models.CharField(max_length=10, blank=True, null=True)
     cpassword = models.CharField(max_length=45, blank=True, null=True)
-    cname = models.CharField(max_length=10, blank=True, null=True)
+    cname = models.CharField(max_length=45, blank=True, null=True)
     ctel = models.CharField(max_length=45, blank=True, null=True)
     caddress = models.CharField(max_length=45, blank=True, null=True)
     industry = models.CharField(max_length=10, blank=True, null=True)
@@ -87,10 +87,10 @@ class Company(models.Model):
                                     null=True)  # Field name made lowercase.
     registercapital = models.CharField(db_column='registerCapital', max_length=20, blank=True,
                                        null=True)  # Field name made lowercase.
-    timelimit = models.CharField(db_column='timeLimit', max_length=20, blank=True,
+    timelimit = models.CharField(db_column='timeLimit', max_length=45, blank=True,
                                  null=True)  # Field name made lowercase.
     business = models.CharField(max_length=45, blank=True, null=True)
-    cemail = models.CharField(max_length=20, blank=True, null=True)
+    cemail = models.CharField(max_length=45, blank=True, null=True)
 
     class Meta:
         managed = False
@@ -214,8 +214,6 @@ class Resume(models.Model):
     expbegin = models.CharField(max_length=20, blank=True, null=True)
     expend = models.CharField(max_length=20, blank=True, null=True)
     detail = models.CharField(max_length=45, blank=True, null=True)
-    skill = models.CharField(max_length=20, blank=True, null=True)
-    self = models.CharField(max_length=20, blank=True, null=True)
 
     class Meta:
         managed = False

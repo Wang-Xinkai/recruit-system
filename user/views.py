@@ -12,7 +12,7 @@ import random, string
 
 max_pop = 0
 MAX_INTEREST_LENGTH = 5
-loginuser = "student1"
+loginuser = "coderwang"
 
 
 # 学生注册
@@ -98,7 +98,6 @@ def get_recommend_jobs(request):
         student = Student.objects.get(sloginid=sloginid_input)
         jobids = recommendation_by_jobpop()
         jobids = jobids + recommendation_by_tag(sloginid_input)
-        # jobids = {"1234567890", "1243567890"}
         jobs = set()
         for item in jobids:
             jobs.add(Job.objects.get(jobid=item))
@@ -127,7 +126,6 @@ def get_recommend_jobs(request):
 def get_recommend_talks(request):
     response = {}
     try:
-        sloginid_input = request.GET.get('sloginid')
         talkids = recommendation_by_seminarpop()
         talks = set()
         for item in talkids:
@@ -144,7 +142,6 @@ def get_recommend_talks(request):
 
 
 # 添加简历
-# @todo 添加最后两拦信息
 @require_http_methods(["GET"])
 def add_resume(request):
     response = {}
@@ -242,7 +239,6 @@ def get_my_job(request):
         sloginid_input = request.GET.get('sloginid')
         student = Student.objects.get(sloginid=sloginid_input)
         joblist = student.jobs.split()
-        print(joblist)
         jobs = set()
         for item in joblist:
             jobs.add(Job.objects.get(jobid=item))
@@ -274,13 +270,10 @@ def deliver_resume(request):
     try:
         sloginid_input = request.GET.get('sloginid')
         jobid_input = request.GET.get('jobid')
-        # print("first +")
         student = Student.objects.get(sloginid=sloginid_input)
         student.jobs = student.jobs + jobid_input + " "
         student.save()
-        # print(student.jobs)
         resumeid = Resume.objects.get(student_studentid=Student.objects.get(sloginid=sloginid_input)).resumeid
-        # print("second +")
         job = Job.objects.get(jobid=jobid_input)
         job.resumes = job.resumes + resumeid + " "
         job.save()
@@ -382,14 +375,11 @@ def show_interview(request):
 
 
 # 查看招聘信息
-# @todo change by view time
 @require_http_methods(["GET"])
 def show_job(request):
     response = {}
     global max_pop
     try:
-        sloginid_input = request.GET.get('sloginid')
-        jobtag = request.GET.get('jobtag')
         # 更改招聘信息热度
         job = Job.objects.get(jobid=request.GET.get('jobid'))
         job.jobpop = job.jobpop + 1
@@ -588,15 +578,9 @@ def return_resumes(request):
 def interview(request):
     response = {}
     try:
-        # resume_input = request.GET.get('resumeid')
-        # resume = Resume.objects.get(resumeid=resume_input)
         student = Student.objects.get(sloginid=loginuser)
-        # studentid = resume.student_studentid.sloginid
         student.trick = 1
         student.save()
-        # interview = Interview(interviewid=genRandomString(10), iname=request.GET.get('iname'),
-        #                      itime=request.GET.get('itime'), studentid=studentid)
-        # interview.save()
         response['msg'] = 'success'
         response['error_num'] = 0
 
@@ -632,7 +616,6 @@ def add_seminar(request):
 def add_job(request):
     response = {}
     try:
-        # jobinfo = json.loads(request.GET.get('jobinfo'))
         company = Company.objects.get(cloginid=request.GET.get('companyid'))
         job = Job(jobid=genRandomString(),
                   company_companyid=company,
@@ -683,9 +666,6 @@ def genRandomString(slen=10):
     return ''.join(random.sample(string.ascii_letters + string.digits, slen))
 
 
-# @todo change weight of interest when click on the job
-
-
 # this function is a test case for recommendation by pop
 def recommendation_by_jobpop():
     s = []
@@ -697,8 +677,6 @@ def recommendation_by_jobpop():
 
     for i in range(len(job_list1)):
         for j in range(0, len(job_list1) - i - 1):
-            print(type(job_list2[j]))
-            print(job_list2[j])
             if job_list2[j] < job_list2[j + 1]:
                 job_list1[j], job_list1[j + 1] = job_list1[j + 1], job_list1[j]
                 job_list2[j], job_list2[j + 1] = job_list2[j + 1], job_list2[j]
@@ -716,10 +694,6 @@ def recommendation_by_jobpop():
 def recommendation_by_tag(stdid):
     student = Student.objects.get(sloginid=stdid)
     tag = student.interest.split()
-    print(type(tag[0]))
-
-    # 需要将json格式的数组读取到这个数组里
-    # reply：没有json文件了，tag是兴趣的list
     arr = [i for i in range(len(tag))]
 
     for i in range(len(tag)):
