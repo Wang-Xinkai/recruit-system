@@ -338,6 +338,29 @@ def attend_talk(request):
     return JsonResponse(response)
 
 
+@require_http_methods(["GET"])
+def show_talk(request):
+    response = {}
+    try:
+        seminar = Seminar.objects.get(seminarid=request.GET.get('seminarid'))
+        response['sname'] = seminar.sname
+        response['cname'] = seminar.cname
+        response['splace'] = seminar.splace
+        response['sdate'] = seminar.stime
+        response['stheme'] = seminar.stheme
+        response['sactivity'] = "内推资格"
+        response['scontent'] = seminar.sinfo
+        response['sbegin'] = "10:30"
+        response['send'] = "11:30"
+        response['msg'] = 'success'
+        response['error_num'] = 0
+
+    except Exception as e:
+        response['msg'] = str(e)
+        response['error_num'] = 1
+    return JsonResponse(response)
+
+
 # 查看面试消息
 @require_http_methods(["GET"])
 def show_interview(request):
@@ -474,13 +497,17 @@ def show_companyForm(request):
 def show_company(request):
     response = {}
     try:
+        seminarid_input = request.GET.get('seminarid')
         jobid_input = request.GET.get('jobid')
-        company = Job.objects.get(jobid=jobid_input).company_companyid
+        if seminarid_input != "":
+            company = Seminar.objects.get(seminarid=seminarid_input).company_companyid
+        else:
+            company = Job.objects.get(jobid=jobid_input).company_companyid
         response['cname'] = company.cname
         response['industry'] = company.industry
         response['scale'] = company.scale
         response['place'] = company.caddress
-        response['registerDate'] = company.registerDate
+        response['registerDate'] = company.registerdate
         response['registerCapital'] = company.registercapital
         response['timeLimit'] = company.timelimit
         response['business'] = company.business
@@ -744,7 +771,7 @@ def recommendation_by_seminarpop():
                 seminar_list2[j], seminar_list2[j + 1] = seminar_list2[j + 1], seminar_list2[j]
 
     while (len(s) < 2):
-        x = random.randint(0, 19)
+        x = random.randint(0, 8)
         if seminar_list1[x] not in s:
             s.append(seminar_list1[x])
     # s中存储了推荐宣讲会的id，查询并返回宣讲会内容即可

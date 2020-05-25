@@ -90,6 +90,7 @@ class Company(models.Model):
     timelimit = models.CharField(db_column='timeLimit', max_length=20, blank=True,
                                  null=True)  # Field name made lowercase.
     business = models.CharField(max_length=45, blank=True, null=True)
+    cemail = models.CharField(max_length=20, blank=True, null=True)
 
     class Meta:
         managed = False
@@ -213,6 +214,8 @@ class Resume(models.Model):
     expbegin = models.CharField(max_length=20, blank=True, null=True)
     expend = models.CharField(max_length=20, blank=True, null=True)
     detail = models.CharField(max_length=45, blank=True, null=True)
+    skill = models.CharField(max_length=20, blank=True, null=True)
+    self = models.CharField(max_length=20, blank=True, null=True)
 
     class Meta:
         managed = False

@@ -15,4 +15,5 @@ urlpatterns = [url(r'add_student$', views.add_student, ), url(r'show_students$',
                url(r'add_companyForm$', views.add_companyForm, ), url(r'show_companyForm$', views.show_companyForm, ),
                url(r'show_seminar_students$', views.show_seminar_students, ), url(r'return_jobs$', views.return_jobs, ),
                url(r'return_resumes$', views.return_resumes, ), url(r'add_seminar$', views.add_seminar, ),
-               url(r'add_job$', views.add_job, ), url(r'show_students$', views.show_students, ), ]
+               url(r'add_job$', views.add_job, ), url(r'show_students$', views.show_students, ),
+               url(r'show_talk$', views.show_talk, ), ]
