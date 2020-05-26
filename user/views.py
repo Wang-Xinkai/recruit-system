@@ -682,7 +682,7 @@ def recommendation_by_jobpop():
                 job_list2[j], job_list2[j + 1] = job_list2[j + 1], job_list2[j]
 
     while (len(s) < 2):
-        x = random.randint(0, 19)
+        x = random.randint(0, 5)
         if job_list1[x] not in s:
             s.append(job_list1[x])
     # s中存储了推荐招聘信息的id，查询并返回招聘信息内容即可
@@ -722,9 +722,9 @@ def recommendation_by_tag(stdid):
                 if job_list2[l] < job_list2[l + 1]:
                     job_list1[l], job_list1[l + 1] = job_list1[l + 1], job_list1[l]
                     job_list2[l], job_list2[l + 1] = job_list2[l + 1], job_list2[l]
-
-        x = random.randint(0, 3)
-        jobid_list.append(job_list1[x])
+        print("stuck 1")
+        # x = random.randint(0, 3)
+        jobid_list.append(job_list1[0])
         # jobid_list中保存了根据tag选出的3个招聘信息的id，返回根据id查询得到的招聘信息即可
     return jobid_list
 
