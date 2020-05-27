@@ -1,14 +1,14 @@
+import json
+import random
+import string
 from enum import Enum
 
-from django.shortcuts import render
-
-# Create your views here.
-from django.views.decorators.http import require_http_methods
 from django.core import serializers
 from django.http import JsonResponse
-import json
+# Create your views here.
+from django.views.decorators.http import require_http_methods
+
 from .models import Student, Job, Company, Resume, Seminar, Interview
-import random, string
 
 max_pop = 0
 MAX_INTEREST_LENGTH = 5
@@ -266,7 +266,7 @@ def get_my_job(request):
 # 投递简历
 @require_http_methods(["GET"])
 def deliver_resume(request):
-    response = {};
+    response = {}
     try:
         sloginid_input = request.GET.get('sloginid')
         jobid_input = request.GET.get('jobid')
@@ -488,8 +488,9 @@ def show_company(request):
     response = {}
     try:
         seminarid_input = request.GET.get('seminarid')
+        print(seminarid_input)
         jobid_input = request.GET.get('jobid')
-        if seminarid_input != "":
+        if seminarid_input != None:
             company = Seminar.objects.get(seminarid=seminarid_input).company_companyid
         else:
             company = Job.objects.get(jobid=jobid_input).company_companyid
@@ -745,7 +746,7 @@ def recommendation_by_seminarpop():
                 seminar_list2[j], seminar_list2[j + 1] = seminar_list2[j + 1], seminar_list2[j]
 
     while (len(s) < 2):
-        x = random.randint(0, 8)
+        x = random.randint(0, 2)
         if seminar_list1[x] not in s:
             s.append(seminar_list1[x])
     # s中存储了推荐宣讲会的id，查询并返回宣讲会内容即可
