@@ -724,8 +724,8 @@ def recommendation_by_tag(stdid):
                     job_list1[l], job_list1[l + 1] = job_list1[l + 1], job_list1[l]
                     job_list2[l], job_list2[l + 1] = job_list2[l + 1], job_list2[l]
         print("stuck 1")
-        # x = random.randint(0, 3)
-        jobid_list.append(job_list1[0])
+        x = random.randint(0, 3)
+        jobid_list.append(job_list1[x])
         # jobid_list中保存了根据tag选出的3个招聘信息的id，返回根据id查询得到的招聘信息即可
     return jobid_list
 
